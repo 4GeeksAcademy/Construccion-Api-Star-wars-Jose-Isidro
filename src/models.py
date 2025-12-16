@@ -1,16 +1,21 @@
+
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean
-from sqlalchemy.orm import Mapped, mapped_column,relationship
+from sqlalchemy import String, Boolean , ForeignKey
+from typing import List
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 db = SQLAlchemy()
+
 
 class User(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(nullable=False)
     last_name: Mapped[str] = mapped_column(nullable=False)
-    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
     fecha_de_subscripcion: Mapped[int] = mapped_column(nullable=False)
+    favorite: Mapped[List["Favorite"]] = relationship(back_populates="user")
 
     def serialize(self):
         return {
@@ -22,7 +27,6 @@ class User(db.Model):
         }
 
 
-
 class People(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(nullable=False)
@@ -30,9 +34,11 @@ class People(db.Model):
     height: Mapped[float] = mapped_column(nullable=False)
     eye_color:  Mapped[str] = mapped_column(nullable=True)
     skin_color: Mapped[str] = mapped_column(nullable=True)
+    favorite_person: Mapped[List["People_favorite"]
+                            ] = relationship(back_populates="person")
 
     def serialize(self):
-        return{
+        return {
             "id": self.id,
             "name": self.name,
             "gender": self.gender,
@@ -49,9 +55,11 @@ class Planet(db.Model):
     diameter: Mapped[int] = mapped_column(nullable=False)
     terrain: Mapped[str] = mapped_column(nullable=False)
     population: Mapped[int] = mapped_column(nullable=True)
+    favorite_planet: Mapped[List["Planet_favorite"]
+                             ] = relationship(back_populates="planet")
 
     def serialize(self):
-        return{
+        return {
             "id": self.id,
             "name": self.name,
             "climate": self.climate,
@@ -63,21 +71,27 @@ class Planet(db.Model):
 
 class Favorite(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped['User'] = relationship()
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    user: Mapped["User"] = relationship(back_populates="favorite")
+
 
 class People_favorite(Favorite):
-    people_id: Mapped['People'] = relationship()
+    people_id: Mapped[int] = mapped_column(ForeignKey("people.id"))
+    person: Mapped["People"] = relationship(back_populates="favorite_person")
 
     def serialize(self):
-        return{
-             "people_id": self.people_id
+        return {
+            "user_id": self.user_id,
+            "people_id": self.people_id
         }
 
 
 class Planet_favorite(Favorite):
-    planeta_id: Mapped['Planet'] = relationship()
+    planeta_id: Mapped[int] = mapped_column(ForeignKey("planet.id"))
+    planet: Mapped["Planet"] = relationship(back_populates="favorite_planet")
 
     def serialize(self):
         return{
+            "user_id": self.user_id,
              "planeta_id": self.planeta_id
         }
