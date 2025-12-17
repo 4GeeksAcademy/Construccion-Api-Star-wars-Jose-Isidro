@@ -93,5 +93,5 @@ class Planet_favorite(Favorite):
     def serialize(self):
         return{
             "user_id": self.user_id,
-             "planeta_id": self.planeta_id
+            "planeta_id": self.planeta_id
         }

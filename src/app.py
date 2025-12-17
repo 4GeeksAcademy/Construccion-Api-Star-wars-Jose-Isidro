@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, People, Planet , Favorite
+from models import db, User, People, Planet , Favorite ,People_favorite ,Planet_favorite
 #from models import Person
 
 app = Flask(__name__)
@@ -44,10 +44,12 @@ def get_users():
     return jsonify(all_user), 200
 
 @app.route('/users/favorites', methods=['GET'])
-def get_favorites(favorite):
-    user_favorite = Favorite.query.get(favorite)
-
-    return jsonify(user_favorite), 200
+def get_favorites():
+    all_favorite = Favorite.query.all()
+    result = []
+    for i in all_favorite:
+        result.append(i.serialize())
+    return jsonify(result), 200
 
 @app.route('/people', methods=['GET'])
 def get_people():
@@ -74,6 +76,23 @@ def get_planet_id(planet_id):
     planet = Planet.query.get(planet_id)
 
     return jsonify(planet), 200
+
+@app.route("/favorite/planet/<int:planet_id>", methods=["POST"])
+def post_planet(planet_id):
+    planet = Planet.query.get(planet_id)
+    if not planet:
+        return jsonify({"msg": "Planeta no existe"}), 404
+    user_id = 1
+
+    new_fav = Planet_favorite(
+        user_id=user_id,
+        planeta_id=planet_id
+    )
+
+    db.session.add(new_fav)
+    db.session.commit()
+
+    return jsonify(new_fav.serialize()), 201
 
 
 # this only runs if `$ python src/app.py` is executed
