@@ -76,13 +76,13 @@ class Favorite(db.Model):
 
 
 class People_favorite(Favorite):
-    people_id: Mapped[int] = mapped_column(ForeignKey("people.id"))
+    person_id: Mapped[int] = mapped_column(ForeignKey("people.id"))
     person: Mapped["People"] = relationship(back_populates="favorite_person")
 
     def serialize(self):
         return {
             "user_id": self.user_id,
-            "people_id": self.people_id
+            "person_id": self.person_id
         }
 
 

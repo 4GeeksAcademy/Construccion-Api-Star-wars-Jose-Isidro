@@ -79,9 +79,12 @@ def get_planet_id(planet_id):
 
 @app.route("/favorite/planet/<int:planet_id>", methods=["POST"])
 def post_planet(planet_id):
+
     planet = Planet.query.get(planet_id)
+
     if not planet:
         return jsonify({"msg": "Planeta no existe"}), 404
+    # puse este "user_id" porque aun no tengo token
     user_id = 1
 
     new_fav = Planet_favorite(
@@ -93,6 +96,56 @@ def post_planet(planet_id):
     db.session.commit()
 
     return jsonify(new_fav.serialize()), 201
+
+@app.route("/favorite/people/<int:people_id>", methods=["POST"])
+def post_person(people_id):
+
+    people = People.query.get(people_id)
+
+    if not people:
+        return jsonify({"msg": "Personaje no existe"}), 404
+    # puse este "user_id" porque aun no tengo token
+    user_id = 1
+
+    new_fav = People_favorite(
+        user_id=user_id,
+        people_id=people_id
+    )
+
+    db.session.add(new_fav)
+    db.session.commit()
+
+    return jsonify(new_fav.serialize()), 201
+
+@app.route("/favorite/planet/<int:planet_id>", methods=["DELETE"])
+def delete_planet_favorite(planet_id):
+    # puse este "user_id" porque aun no tengo token
+    user_id = 1
+
+    planeta = Planet_favorite.query.filter_by(user_id = user_id , planeta_id = planet_id).first()
+
+    if not planeta:
+        return jsonify({"msg": "Planet not exit"}),404
+    
+    db.session.delete(planeta)
+    db.session.commit()
+
+    return jsonify({"msg" : "planeta eliminado de favoritos"}),200
+
+@app.route("/favorite/people/<int:people_id>", methods=["DELETE"])
+def delete_people_favorite(people_id):
+    # puse este "user_id" porque aun no tengo token
+    user_id = 1
+
+    person = People_favorite.query.filter_by(user_id = user_id , person_id = people_id).first()
+
+    if not person:
+        return jsonify({"msg": "Personaje not exit"}),404
+    
+    db.session.delete(person)
+    db.session.commit()
+
+    return jsonify({"msg" : "personaje eliminado de favoritos"}),200
 
 
 # this only runs if `$ python src/app.py` is executed
